@@ -1,62 +1,87 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useApp } from '../../context/AppProvider';
 import { useTheme } from '../../context/ThemeProvider';
-import { apiRequest, listPlatformVideos, PlatformVideo } from '../../services/api';
-import { API_URL } from '../../services/api';
-import { AppIcon, IconName } from '../../components/Icon';
+import { getShortVideos, hasYouTubeApiKey, Video } from '../../backend/youtube';
+import { AppIcon } from '../../components/Icon';
 
 export default function ShortsScreen() {
   const { colors } = useTheme();
-  const { token } = useApp();
-  const [videos, setVideos] = useState<PlatformVideo[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [pageHeight, setPageHeight] = useState(0);
-  const [error, setError] = useState('');
-  const [liked, setLiked] = useState<Record<string, boolean>>({});
-  const [saved, setSaved] = useState<Record<string, boolean>>({});
-  const [subscribed, setSubscribed] = useState<Record<string, boolean>>({});
+
   const load = useCallback(async () => {
-    setLoading(true); setError('');
-    try { setVideos(await listPlatformVideos(token)); }
-    catch { setError('Short videos couldn’t load. Check your connection and try again.'); }
-    finally { setLoading(false); }
-  }, [token]);
+    setLoading(true);
+    setError(false);
+    if (!hasYouTubeApiKey) {
+      setVideos([]);
+      setLoading(false);
+      setError(true);
+      return;
+    }
+    try {
+      setVideos(await getShortVideos());
+    } catch {
+      setVideos([]);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => { void load(); }, [load]);
 
-  const action = async (video: PlatformVideo, kind: 'like' | 'save') => {
-    if (!token) { router.push('/auth'); return; }
-    try {
-      await apiRequest(`/api/videos/${encodeURIComponent(video.id)}/${kind}`, token, { method: 'POST' });
-      if (kind === 'like') setLiked((state) => ({ ...state, [video.id]: !state[video.id] }));
-      else setSaved((state) => ({ ...state, [video.id]: !state[video.id] }));
-    } catch { setError('That action couldn’t be completed. Please try again.'); }
-  };
-  const subscribe = async (video: PlatformVideo) => {
-    if (!token) { router.push('/auth'); return; }
-    try {
-      const data = await apiRequest<{ subscribed: boolean }>(`/api/channels/${encodeURIComponent(video.channel.username)}/subscribe`, token, { method: 'POST' });
-      setSubscribed((state) => ({ ...state, [video.channel.id]: data.subscribed }));
-    } catch { setError('Your subscription couldn’t be updated. Please try again.'); }
-  };
+  const openVideo = (video: Video) => router.push({
+    pathname: '/watch/[videoId]',
+    params: { videoId: video.id, title: video.title, channel: video.channel },
+  });
 
-  return <View onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)} style={[s.screen, { backgroundColor: colors.background }]}>
+  return <View onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)} style={[s.screen, { backgroundColor: '#000' }]}>
     {loading && <ActivityIndicator style={s.loading} color={colors.accent} />}
-    {!!error && <Text style={[s.error, { color: colors.danger }]}>{error}</Text>}
-    {!loading && videos.length === 0 && <View style={s.empty}><Text style={[s.title, { color: colors.text }]}>No creator videos yet</Text><Text style={[s.body, { color: colors.muted }]}>Short form videos uploaded by Serein creators will appear here.</Text><Pressable onPress={() => router.push('/(tabs)')} style={[s.button, { backgroundColor: colors.accent }]}><Text style={{ color: colors.accentText, fontWeight: '800' }}>Explore videos</Text></Pressable><Pressable onPress={() => router.push('/upload')}><Text style={[s.create, { color: colors.accent }]}>Upload a video</Text></Pressable></View>}
-    <FlatList data={videos} keyExtractor={(item) => item.id} pagingEnabled showsVerticalScrollIndicator={false} initialNumToRender={1} maxToRenderPerBatch={2} windowSize={3} removeClippedSubviews onRefresh={() => void load()} refreshing={loading} renderItem={({ item }) => {
-      const source = item.mediaUrl ? `${API_URL}${item.mediaUrl}` : `${API_URL}/api/videos/${encodeURIComponent(item.id)}/media`;
-      const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,video{margin:0;width:100%;height:100%;background:#000}video{object-fit:contain}</style></head><body><video controls autoplay playsinline src="${source}"></video></body></html>`;
-      return <View style={[s.page, { height: pageHeight || 640, backgroundColor: colors.background }]}><WebView source={{ html, baseUrl: API_URL }} style={s.player} allowsFullscreenVideo javaScriptEnabled mediaPlaybackRequiresUserAction originWhitelist={['*']} /><View pointerEvents="box-none" style={s.overlay}><View style={s.copy}><Text style={[s.videoTitle, { color: '#fff' }]}>{item.title}</Text><Text style={s.channel}>@{item.channel.username} · {item.views} views</Text><Text numberOfLines={2} style={s.description}>{item.description || item.category}</Text><Pressable onPress={() => void subscribe(item)} style={[s.subscribe, { backgroundColor: subscribed[item.channel.id] ? '#28282C' : colors.accent }]}><Text style={{ color: subscribed[item.channel.id] ? '#fff' : colors.accentText, fontWeight: '800', fontSize: 12 }}>{subscribed[item.channel.id] ? 'Subscribed' : 'Subscribe'}</Text></Pressable></View><View style={s.actions}><Action label={liked[item.id] ? 'Liked' : 'Like'} color={liked[item.id] ? colors.accent : '#fff'} onPress={() => void action(item, 'like')} /><Action label="Comments" color="#fff" onPress={() => router.push({ pathname: '/watch/[videoId]', params: { videoId: item.id, title: item.title, channel: item.channel.displayName, source: 'platform' } })} /><Action label={saved[item.id] ? 'Saved' : 'Save'} color={saved[item.id] ? colors.accent : '#fff'} onPress={() => void action(item, 'save')} /><Action label="Share" color="#fff" onPress={() => void Share.share({ message: `${item.title} — ${API_URL}/api/videos/${item.id}` })} /></View></View></View>;
-    }} />
+    {!loading && videos.length === 0 && <View style={s.empty}>
+      <AppIcon name="shorts" color={colors.text} size={42} />
+      <Text style={[s.emptyTitle, { color: colors.text }]}>{error ? 'Shorts couldn’t load' : 'No Shorts found'}</Text>
+      <Text style={[s.emptyBody, { color: colors.muted }]}>{error ? 'Check your connection and YouTube API setup, then try again.' : 'Try again in a moment to load fresh short videos.'}</Text>
+      <Pressable onPress={() => void load()} style={[s.retry, { backgroundColor: colors.accent }]}><Text style={{ color: colors.accentText, fontWeight: '700' }}>Try again</Text></Pressable>
+    </View>}
+    <FlatList
+      data={videos}
+      keyExtractor={(video) => video.id}
+      pagingEnabled
+      showsVerticalScrollIndicator={false}
+      initialNumToRender={1}
+      maxToRenderPerBatch={2}
+      windowSize={3}
+      removeClippedSubviews
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} tintColor={colors.accent} />}
+      renderItem={({ item }) => {
+        const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>html,body,iframe{margin:0;width:100%;height:100%;background:#000;border:0}iframe{position:absolute;inset:0}</style></head><body><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&playsinline=1&rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></body></html>`;
+        return <View style={[s.page, { height: pageHeight || 640 }]}>
+          <WebView source={{ html, baseUrl: 'https://www.youtube-nocookie.com' }} style={s.player} allowsFullscreenVideo javaScriptEnabled domStorageEnabled mediaPlaybackRequiresUserAction={false} setSupportMultipleWindows={false} originWhitelist={['*']} />
+          <View pointerEvents="box-none" style={s.overlay}>
+            <Pressable onPress={() => openVideo(item)} style={s.details}>
+              <Text numberOfLines={2} style={s.videoTitle}>{item.title}</Text>
+              <Text numberOfLines={1} style={s.channel}>@{item.channel} · {item.views}</Text>
+            </Pressable>
+            <View style={s.actions}>
+              <Pressable accessibilityLabel="Open video details" onPress={() => openVideo(item)} style={s.action}><AppIcon name="play" color="#fff" size={26} /><Text style={s.actionLabel}>Open</Text></Pressable>
+              <Pressable accessibilityLabel="Share Short" onPress={() => void Share.share({ message: `${item.title} https://www.youtube.com/shorts/${item.id}` })} style={s.action}><AppIcon name="share" color="#fff" size={25} /><Text style={s.actionLabel}>Share</Text></Pressable>
+            </View>
+          </View>
+        </View>;
+      }}
+    />
   </View>;
 }
 
-function Action({ label, color, onPress }: { label: string; color: string; onPress: () => void }) {
-  const icon: IconName = label.toLowerCase().includes('like') ? 'like' : label.toLowerCase().includes('comment') ? 'comment' : label.toLowerCase().includes('save') ? 'save' : 'share';
-  return <Pressable onPress={onPress} style={s.action}><AppIcon name={icon} color={color} size={25} /><Text style={{ color, fontSize: 10, fontWeight: '600' }}>{label}</Text></Pressable>;
-}
-
-const s = StyleSheet.create({ screen: { flex: 1 }, loading: { marginTop: 25 }, error: { padding: 12, fontSize: 12 }, page: { width: '100%' }, player: { flex: 1, backgroundColor: '#000' }, overlay: { ...StyleSheet.absoluteFill, justifyContent: 'flex-end', flexDirection: 'row', alignItems: 'flex-end', padding: 16, paddingBottom: 22 }, copy: { flex: 1, paddingRight: 12 }, videoTitle: { fontSize: 16, fontWeight: '800' }, channel: { color: '#F0F0F0', marginTop: 6, fontSize: 12 }, description: { color: '#ddd', fontSize: 11, marginTop: 5, lineHeight: 16 }, subscribe: { alignSelf: 'flex-start', marginTop: 12, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 8 }, actions: { alignItems: 'center', gap: 15, paddingBottom: 3 }, action: { alignItems: 'center', gap: 5, minWidth: 47 }, empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 25 }, title: { fontSize: 19, fontWeight: '800', textAlign: 'center' }, body: { marginTop: 8, fontSize: 12, lineHeight: 18, textAlign: 'center' }, button: { marginTop: 17, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16 }, create: { marginTop: 16, fontSize: 12, fontWeight: '700' } });
+const s = StyleSheet.create({
+  screen: { flex: 1 }, loading: { marginTop: 28 }, page: { width: '100%', backgroundColor: '#000' },
+  player: { flex: 1, backgroundColor: '#000' }, overlay: { ...StyleSheet.absoluteFill, flexDirection: 'row', alignItems: 'flex-end', padding: 16, paddingBottom: 20 },
+  details: { flex: 1, paddingRight: 14, paddingBottom: 2 }, videoTitle: { color: '#fff', fontSize: 15, fontWeight: '700' }, channel: { color: '#eee', fontSize: 12, marginTop: 7 },
+  actions: { alignItems: 'center', gap: 20, paddingBottom: 3 }, action: { alignItems: 'center', gap: 4, minWidth: 44 }, actionLabel: { color: '#fff', fontSize: 10, fontWeight: '600' },
+  empty: { ...StyleSheet.absoluteFill, zIndex: 2, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#000' }, emptyTitle: { marginTop: 15, fontSize: 18, fontWeight: '700', textAlign: 'center' },
+  emptyBody: { marginTop: 8, fontSize: 13, lineHeight: 19, textAlign: 'center' }, retry: { marginTop: 18, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10 },
+});

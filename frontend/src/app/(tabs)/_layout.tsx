@@ -37,7 +37,7 @@ export default function TabLayout() {
     Animated.timing(offset, { toValue: next ? 1 : 0, duration: 220, useNativeDriver: true }).start();
   }, [offset]);
   const renderTabBar = useCallback((props: BottomTabBarProps) => (
-    <Animated.View pointerEvents={hidden ? 'none' : 'auto'} style={{ transform: [{ translateY: offset.interpolate({ inputRange: [0, 1], outputRange: [0, 110] }) }] }}>
+    <Animated.View pointerEvents={hidden ? 'none' : 'auto'} style={{ transform: [{ translateY: offset.interpolate({ inputRange: [0, 1], outputRange: [0, 120] }) }], opacity: offset.interpolate({ inputRange: [0, 0.8, 1], outputRange: [1, 0, 0] }) }}>
       <BottomTabBar {...props} />
     </Animated.View>
   ), [hidden, offset]);
@@ -50,8 +50,8 @@ export default function TabLayout() {
     safeAreaInsets: { bottom: 0 },
     tabBarHideOnKeyboard: true,
     tabBarButton: (props) => <PlatformPressable {...props} android_ripple={{ color: 'transparent', borderless: false }} pressOpacity={1} />,
-    tabBarBackground: () => <View pointerEvents="none" style={StyleSheet.absoluteFill}><View style={[styles.divider, { backgroundColor: colors.border }]} /></View>,
-    tabBarStyle: [styles.bar, { backgroundColor: colors.background, borderTopColor: colors.border }],
+    tabBarBackground: () => <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}><View style={[styles.divider, { backgroundColor: '#171717', opacity: 0.18 }]} /></View>,
+    tabBarStyle: [styles.bar, { backgroundColor: colors.background, borderTopColor: 'transparent' }],
     tabBarItemStyle: [styles.item, route.name === 'create' && styles.createItem],
     tabBarIcon: ({ color }) => {
       const tab = tabs.find((item) => item.name === route.name) ?? tabs[0];
@@ -69,12 +69,12 @@ function TabItem({ name, icon, color }: { name: string; icon: keyof typeof tabIc
 }
 
 const styles = StyleSheet.create({
-  bar: { minHeight: 62, paddingTop: 4, paddingBottom: 4, borderTopWidth: 0, elevation: 0 },
-  divider: { position: 'absolute', top: 4, left: 0, right: 0, height: StyleSheet.hairlineWidth },
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 48, minHeight: 48, paddingTop: 0, paddingBottom: 0, borderTopWidth: 0, elevation: 0, shadowOpacity: 0 },
+  divider: { position: 'absolute', top: 0, left: 0, right: 0, height: StyleSheet.hairlineWidth },
   item: { flex: 1, paddingTop: 0, paddingHorizontal: 1 },
   createItem: { transform: [{ translateX: -6 }] },
   iconArea: { width: 46, height: 32, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 10, letterSpacing: -0.25, includeFontPadding: false, textAlign: 'center' },
+  label: { fontSize: 10, letterSpacing: -0.25, includeFontPadding: false, textAlign: 'center', transform: [{ translateY: -2 }] },
   subscriptionsIconArea: { width: 54, height: 32 },
-  tabIcon: { width: 28, height: 28, resizeMode: 'contain' },
+  tabIcon: { width: 28, height: 28, resizeMode: 'contain', transform: [{ translateY: -3 }] },
 });

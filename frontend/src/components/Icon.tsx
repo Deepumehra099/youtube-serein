@@ -1,12 +1,12 @@
 import { View } from 'react-native';
 import type { ColorValue, ViewStyle } from 'react-native';
 
-export type IconName = 'home' | 'shorts' | 'create' | 'upload' | 'createVideo' | 'subscriptions' | 'library' | 'search' | 'notifications' | 'profile' | 'cast' | 'close' | 'more' | 'history' | 'refresh' | 'share' | 'like' | 'comment' | 'save' | 'back' | 'settings' | 'forward' | 'play';
+export type IconName = 'home' | 'shorts' | 'create' | 'upload' | 'createVideo' | 'subscriptions' | 'library' | 'search' | 'notifications' | 'profile' | 'cast' | 'close' | 'more' | 'history' | 'refresh' | 'share' | 'like' | 'dislike' | 'comment' | 'save' | 'back' | 'settings' | 'forward' | 'play' | 'sparkles' | 'download' | 'flag' | 'send' | 'mic' | 'arrowUpLeft';
 
 export function AppIcon({ name, color, size = 22 }: { name: IconName; color: ColorValue; size?: number }) {
   const k = size / 22;
   const part = (width: number, height: number, extra: ViewStyle = {}): ViewStyle => ({ position: 'absolute', width: width * k, height: height * k, borderColor: color, ...extra });
-  return <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+  return <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', transform: name === 'dislike' ? [{ rotate: '180deg' }] : undefined }}>
     {name === 'home' && <>
       <View style={part(12, 12, { top: 0, left: 5, borderLeftWidth: 2 * k, borderTopWidth: 2 * k, borderTopLeftRadius: 2 * k, transform: [{ rotate: '45deg' }] })} />
       <View style={part(15, 13, { bottom: 1 * k, left: 3.5 * k, borderWidth: 2 * k, borderTopWidth: 0, borderBottomLeftRadius: 2 * k, borderBottomRightRadius: 2 * k })} />
@@ -78,7 +78,11 @@ export function AppIcon({ name, color, size = 22 }: { name: IconName; color: Col
       <View style={part(8, 2, { top: 7 * k, left: 4 * k, backgroundColor: color, transform: [{ rotate: '-30deg' }] })} />
       <View style={part(8, 2, { top: 13 * k, left: 4 * k, backgroundColor: color, transform: [{ rotate: '30deg' }] })} />
     </>}
-    {name === 'like' && <View style={part(18, 16, { top: 3 * k, left: 2 * k, borderWidth: 2 * k, borderTopLeftRadius: 9 * k, borderTopRightRadius: 9 * k, borderBottomLeftRadius: 7 * k, borderBottomRightRadius: 7 * k, transform: [{ rotate: '-45deg' }] })} />}
+    {(name === 'like' || name === 'dislike') && <>
+      <View style={part(5, 9, { top: 11 * k, left: 1 * k, borderWidth: 2 * k, borderRadius: 2 * k })} />
+      <View style={part(12, 11, { top: 9 * k, left: 6 * k, borderWidth: 2 * k, borderRadius: 3 * k })} />
+      <View style={part(5, 9, { top: 2 * k, left: 9 * k, borderWidth: 2 * k, borderRadius: 3 * k, transform: [{ rotate: '18deg' }] })} />
+    </>}
     {name === 'comment' && <><View style={part(18, 14, { top: 2 * k, left: 2 * k, borderWidth: 2 * k, borderRadius: 5 * k })} /><View style={part(5, 5, { bottom: 1 * k, left: 4 * k, borderLeftWidth: 2 * k, borderBottomWidth: 2 * k, transform: [{ skewY: '-35deg' }] })} /></>}
     {name === 'save' && <View style={part(14, 18, { top: 2 * k, left: 4 * k, borderWidth: 2 * k, borderTopLeftRadius: 2 * k, borderTopRightRadius: 2 * k, borderBottomLeftRadius: 7 * k, borderBottomRightRadius: 7 * k })} />}
     {name === 'back' && <><View style={part(15, 2, { top: 10 * k, left: 4 * k, backgroundColor: color })} /><View style={part(8, 2, { top: 7 * k, left: 3 * k, backgroundColor: color, transform: [{ rotate: '-45deg' }] })} /><View style={part(8, 2, { top: 13 * k, left: 3 * k, backgroundColor: color, transform: [{ rotate: '45deg' }] })} /></>}
@@ -88,5 +92,34 @@ export function AppIcon({ name, color, size = 22 }: { name: IconName; color: Col
       <View style={part(9, 2, { top: 13 * k, left: 8 * k, backgroundColor: color, transform: [{ rotate: '-45deg' }] })} />
     </>}
     {name === 'play' && <View style={part(0, 0, { top: 4 * k, left: 6 * k, borderTopWidth: 7 * k, borderBottomWidth: 7 * k, borderLeftWidth: 11 * k, borderTopColor: 'transparent', borderBottomColor: 'transparent', borderLeftColor: color })} />}
+    {name === 'sparkles' && <>
+      <View style={part(7, 7, { top: 2 * k, left: 8 * k, backgroundColor: color, transform: [{ rotate: '45deg' }] })} />
+      <View style={part(4, 4, { top: 13 * k, left: 2 * k, backgroundColor: color, transform: [{ rotate: '45deg' }] })} />
+      <View style={part(4, 4, { top: 14 * k, right: 2 * k, backgroundColor: color, transform: [{ rotate: '45deg' }] })} />
+    </>}
+    {name === 'download' && <>
+      <View style={part(2, 13, { top: 2 * k, left: 10 * k, backgroundColor: color, borderRadius: 1 * k })} />
+      <View style={part(8, 8, { top: 7 * k, left: 7 * k, borderRightWidth: 2 * k, borderBottomWidth: 2 * k, transform: [{ rotate: '45deg' }] })} />
+      <View style={part(17, 2, { bottom: 2 * k, left: 2.5 * k, backgroundColor: color, borderRadius: 1 * k })} />
+    </>}
+    {name === 'flag' && <>
+      <View style={part(2, 19, { top: 1.5 * k, left: 4 * k, backgroundColor: color, borderRadius: 1 * k })} />
+      <View style={part(13, 9, { top: 2 * k, left: 6 * k, borderWidth: 2 * k, borderTopRightRadius: 3 * k, borderBottomRightRadius: 3 * k })} />
+    </>}
+    {name === 'send' && <>
+      <View style={part(0, 0, { top: 3 * k, left: 3 * k, borderTopWidth: 8 * k, borderBottomWidth: 8 * k, borderLeftWidth: 16 * k, borderTopColor: 'transparent', borderBottomColor: 'transparent', borderLeftColor: color, transform: [{ rotate: '-8deg' }] })} />
+      <View style={part(10, 2, { top: 10 * k, left: 4 * k, backgroundColor: color, transform: [{ rotate: '-22deg' }] })} />
+    </>}
+    {name === 'mic' && <>
+      <View style={part(8, 13, { top: 1 * k, left: 7 * k, borderWidth: 2 * k, borderRadius: 5 * k })} />
+      <View style={part(15, 8, { top: 8 * k, left: 3.5 * k, borderWidth: 2 * k, borderTopWidth: 0, borderBottomLeftRadius: 9 * k, borderBottomRightRadius: 9 * k })} />
+      <View style={part(2, 5, { bottom: 1 * k, left: 10 * k, backgroundColor: color })} />
+      <View style={part(8, 2, { bottom: 1 * k, left: 7 * k, backgroundColor: color, borderRadius: 1 * k })} />
+    </>}
+    {name === 'arrowUpLeft' && <>
+      <View style={part(15, 2, { top: 5 * k, left: 4 * k, backgroundColor: color, transform: [{ rotate: '-45deg' }] })} />
+      <View style={part(8, 2, { top: 2 * k, left: 3 * k, backgroundColor: color, transform: [{ rotate: '0deg' }] })} />
+      <View style={part(2, 8, { top: 2 * k, left: 3 * k, backgroundColor: color })} />
+    </>}
   </View>;
 }
