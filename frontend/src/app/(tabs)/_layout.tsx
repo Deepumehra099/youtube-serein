@@ -1,12 +1,23 @@
 import { Tabs } from 'expo-router';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, StyleSheet, View } from 'react-native';
 import type { ColorValue } from 'react-native';
-import { useEffect, useRef } from 'react';
+import type { ImageSourcePropType } from 'react-native';
+import { PlatformPressable } from 'expo-router/build/react-navigation/elements/PlatformPressable';
+import { BottomTabBar } from 'expo-router/build/react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from 'expo-router/build/react-navigation/bottom-tabs';
+import { useCallback, useRef, useState } from 'react';
 import { useTheme } from '../../context/ThemeProvider';
-import { AppIcon, IconName } from '../../components/Icon';
-import { BrandMark } from '../../components/BrandMark';
+import { TabBarScrollContext } from '../../context/TabBarScrollContext';
 
-const tabs: { name: string; label: string; icon: IconName }[] = [
+const tabIcons: Record<string, ImageSourcePropType> = {
+  home: require('../../../assets/tab-icons/home.png'),
+  shorts: require('../../../assets/tab-icons/shorts.png'),
+  create: require('../../../assets/tab-icons/create.png'),
+  subscriptions: require('../../../assets/tab-icons/subscriptions.png'),
+  library: require('../../../assets/tab-icons/library.png'),
+};
+
+const tabs: { name: string; label: string; icon: keyof typeof tabIcons }[] = [
   { name: 'index', label: 'Home', icon: 'home' },
   { name: 'shorts', label: 'Shorts', icon: 'shorts' },
   { name: 'create', label: 'Create', icon: 'create' },
@@ -16,46 +27,54 @@ const tabs: { name: string; label: string; icon: IconName }[] = [
 
 export default function TabLayout() {
   const { colors } = useTheme();
-  return <Tabs screenOptions={({ route }) => ({
+  const offset = useRef(new Animated.Value(0)).current;
+  const hiddenRef = useRef(false);
+  const [hidden, setHidden] = useState(false);
+  const setTabBarHidden = useCallback((next: boolean) => {
+    if (hiddenRef.current === next) return;
+    hiddenRef.current = next;
+    setHidden(next);
+    Animated.timing(offset, { toValue: next ? 1 : 0, duration: 220, useNativeDriver: true }).start();
+  }, [offset]);
+  const renderTabBar = useCallback((props: BottomTabBarProps) => (
+    <Animated.View pointerEvents={hidden ? 'none' : 'auto'} style={{ transform: [{ translateY: offset.interpolate({ inputRange: [0, 1], outputRange: [0, 110] }) }] }}>
+      <BottomTabBar {...props} />
+    </Animated.View>
+  ), [hidden, offset]);
+  return <TabBarScrollContext.Provider value={setTabBarHidden}><Tabs tabBar={renderTabBar} screenOptions={({ route }) => ({
     headerShown: false,
-    tabBarShowLabel: false,
+    tabBarShowLabel: true,
+    tabBarLabelStyle: styles.label,
     tabBarActiveTintColor: colors.accent,
     tabBarInactiveTintColor: colors.muted,
+    safeAreaInsets: { bottom: 0 },
+    tabBarHideOnKeyboard: true,
+    tabBarButton: (props) => <PlatformPressable {...props} android_ripple={{ color: 'transparent', borderless: false }} pressOpacity={1} />,
+    tabBarBackground: () => <View pointerEvents="none" style={StyleSheet.absoluteFill}><View style={[styles.divider, { backgroundColor: colors.border }]} /></View>,
     tabBarStyle: [styles.bar, { backgroundColor: colors.background, borderTopColor: colors.border }],
-    tabBarItemStyle: styles.item,
-    tabBarIcon: ({ color, focused }) => {
+    tabBarItemStyle: [styles.item, route.name === 'create' && styles.createItem],
+    tabBarIcon: ({ color }) => {
       const tab = tabs.find((item) => item.name === route.name) ?? tabs[0];
-      return <TabItem {...tab} focused={focused} color={color} />;
+      return <TabItem {...tab} color={color} />;
     },
   })}>
     {tabs.map((tab) => <Tabs.Screen key={tab.name} name={tab.name} options={{ tabBarLabel: tab.label }} />)}
-  </Tabs>;
+  </Tabs></TabBarScrollContext.Provider>;
 }
 
-function TabItem({ name, label, icon, focused, color }: { name: string; label: string; icon: IconName; focused: boolean; color: ColorValue }) {
-  const { colors } = useTheme();
-  const progress = useRef(new Animated.Value(focused ? 1 : 0)).current;
-  useEffect(() => {
-    Animated.timing(progress, { toValue: focused ? 1 : 0, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
-  }, [focused, progress]);
-  const isCreate = name === 'create';
-  return <View style={styles.itemContent}>
-    {isCreate
-      ? <View style={[styles.createMark, { backgroundColor: colors.accentSoft }]}><BrandMark size={26} /></View>
-      : <View style={styles.iconArea}>
-        <Animated.View style={[styles.activePill, { backgroundColor: colors.accentSoft, opacity: progress }]} />
-        <AppIcon name={icon} color={focused ? colors.accent : color} size={21} />
-      </View>}
-    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} style={[styles.label, { color: focused ? colors.text : colors.muted, fontWeight: focused ? '700' : '500' }]}>{label}</Text>
+function TabItem({ name, icon, color }: { name: string; icon: keyof typeof tabIcons; color: ColorValue }) {
+  return <View style={[styles.iconArea, name === 'subscriptions' && styles.subscriptionsIconArea]}>
+    <Image source={tabIcons[icon]} style={[styles.tabIcon, { tintColor: color }]} />
   </View>;
 }
 
 const styles = StyleSheet.create({
-  bar: { height: 68, paddingTop: 4, paddingBottom: 4, borderTopWidth: StyleSheet.hairlineWidth, elevation: 0 },
-  item: { paddingTop: 0, paddingHorizontal: 1 },
-  itemContent: { width: '100%', height: 58, alignItems: 'center', justifyContent: 'space-between' },
-  iconArea: { width: 46, height: 30, alignItems: 'center', justifyContent: 'center' },
-  activePill: { ...StyleSheet.absoluteFill, borderRadius: 12 },
-  createMark: { width: 36, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  label: { width: '100%', textAlign: 'center', fontSize: 9.5, letterSpacing: -0.35, includeFontPadding: false },
+  bar: { minHeight: 62, paddingTop: 4, paddingBottom: 4, borderTopWidth: 0, elevation: 0 },
+  divider: { position: 'absolute', top: 4, left: 0, right: 0, height: StyleSheet.hairlineWidth },
+  item: { flex: 1, paddingTop: 0, paddingHorizontal: 1 },
+  createItem: { transform: [{ translateX: -6 }] },
+  iconArea: { width: 46, height: 32, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 10, letterSpacing: -0.25, includeFontPadding: false, textAlign: 'center' },
+  subscriptionsIconArea: { width: 54, height: 32 },
+  tabIcon: { width: 28, height: 28, resizeMode: 'contain' },
 });

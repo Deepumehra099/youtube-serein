@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import type { ColorValue, ViewStyle } from 'react-native';
 
-export type IconName = 'home' | 'shorts' | 'create' | 'subscriptions' | 'library' | 'search' | 'notifications' | 'profile' | 'cast' | 'close' | 'more' | 'history' | 'refresh' | 'share' | 'like' | 'comment' | 'save' | 'back' | 'settings' | 'forward' | 'play';
+export type IconName = 'home' | 'shorts' | 'create' | 'upload' | 'createVideo' | 'subscriptions' | 'library' | 'search' | 'notifications' | 'profile' | 'cast' | 'close' | 'more' | 'history' | 'refresh' | 'share' | 'like' | 'comment' | 'save' | 'back' | 'settings' | 'forward' | 'play';
 
 export function AppIcon({ name, color, size = 22 }: { name: IconName; color: ColorValue; size?: number }) {
   const k = size / 22;
@@ -19,6 +19,16 @@ export function AppIcon({ name, color, size = 22 }: { name: IconName; color: Col
     {name === 'create' && <>
       <View style={part(18, 2, { top: 10 * k, left: 2 * k, backgroundColor: color, borderRadius: 2 * k })} />
       <View style={part(2, 18, { top: 2 * k, left: 10 * k, backgroundColor: color, borderRadius: 2 * k })} />
+    </>}
+    {name === 'upload' && <>
+      <View style={part(16, 2, { bottom: 2 * k, left: 3 * k, backgroundColor: color, borderRadius: 2 * k })} />
+      <View style={part(2, 10, { bottom: 3 * k, left: 10 * k, backgroundColor: color, borderRadius: 1 * k })} />
+      <View style={part(8, 8, { top: 1 * k, left: 7 * k, borderTopWidth: 2 * k, borderLeftWidth: 2 * k, transform: [{ rotate: '45deg' }] })} />
+    </>}
+    {name === 'createVideo' && <>
+      <View style={part(16, 13, { top: 4.5 * k, left: 2 * k, borderWidth: 2 * k, borderRadius: 3 * k })} />
+      <View style={part(2.5, 10, { top: 6 * k, left: 9.75 * k, backgroundColor: color, borderRadius: 1.25 * k })} />
+      <View style={part(10, 2.5, { top: 9.75 * k, left: 6 * k, backgroundColor: color, borderRadius: 1.25 * k })} />
     </>}
     {name === 'subscriptions' && <>
       <View style={part(18, 14, { top: 3 * k, left: 2 * k, borderWidth: 2 * k, borderRadius: 2 * k })} />

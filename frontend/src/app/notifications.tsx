@@ -18,7 +18,7 @@ export default function NotificationsScreen() {
   useEffect(() => {
     if (!token) return;
     setLoading(true);
-    void apiRequest<{ items: NotificationItem[] }>('/api/notifications?limit=30', token).then((data) => setItems(data.items)).catch((cause) => setError(cause instanceof Error ? cause.message : 'Could not load notifications.')).finally(() => setLoading(false));
+    void apiRequest<{ items: NotificationItem[] }>('/api/notifications?limit=30', token).then((data) => setItems(data.items)).catch(() => setError('Notifications couldn’t load. Check your connection and try again.')).finally(() => setLoading(false));
   }, [token]);
   const readAll = async () => {
     if (!token) return;

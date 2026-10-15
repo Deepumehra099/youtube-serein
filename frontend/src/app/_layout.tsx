@@ -11,7 +11,7 @@ function AppStack() {
   return (
     <>
       <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.background }}>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="watch/[videoId]" options={{ presentation: 'modal' }} />

@@ -22,19 +22,19 @@ export type ThemeColors = {
 };
 
 const dark: ThemeColors = {
-  background: '#101614', surface: '#171E1B', elevated: '#202925', text: '#F2F6F3',
-  secondary: '#C4D0CA', muted: '#91A099', border: '#2A3731', accent: '#8CCDBA',
-  accentSoft: '#203B33', accentText: '#10201A', chip: '#202925', chipText: '#DCE7E1',
-  chipSelected: '#25483D', danger: '#FFAAA5', dangerSoft: '#382422',
-  brandMark: '#17463D', onBrandMark: '#D4F2E7', overlay: 'rgba(5, 12, 10, 0.62)',
+  background: '#0F0F0F', surface: '#181818', elevated: '#272727', text: '#F1F1F1',
+  secondary: '#D0D0D0', muted: '#AAAAAA', border: '#303030', accent: '#FF7A00',
+  accentSoft: '#48240D', accentText: '#211004', chip: '#272727', chipText: '#E6E6E6',
+  chipSelected: '#65330F', danger: '#FFAAA5', dangerSoft: '#382422',
+  brandMark: '#FF6A00', onBrandMark: '#FFF4E8', overlay: 'rgba(0, 0, 0, 0.62)',
 };
 
 const light: ThemeColors = {
-  background: '#F4F7F5', surface: '#FFFFFF', elevated: '#E9EFEC', text: '#19231F',
-  secondary: '#4F5E57', muted: '#78877F', border: '#DCE5E0', accent: '#246D5F',
-  accentSoft: '#E1F0EA', accentText: '#FFFFFF', chip: '#EAF0ED', chipText: '#34433C',
-  chipSelected: '#DDECE6', danger: '#9B3E3A', dangerSoft: '#F7E9E5',
-  brandMark: '#17463D', onBrandMark: '#D4F2E7', overlay: 'rgba(12, 22, 18, 0.55)',
+  background: '#FFFFFF', surface: '#FFFFFF', elevated: '#F2F2F2', text: '#0F0F0F',
+  secondary: '#606060', muted: '#767676', border: '#E5E5E5', accent: '#C94F00',
+  accentSoft: '#FFE2C8', accentText: '#241105', chip: '#F2F2F2', chipText: '#3F3F3F',
+  chipSelected: '#FFD1AB', danger: '#9B3E3A', dangerSoft: '#F7E9E5',
+  brandMark: '#FF6A00', onBrandMark: '#FFFFFF', overlay: 'rgba(0, 0, 0, 0.55)',
 };
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, section: 32 } as const;

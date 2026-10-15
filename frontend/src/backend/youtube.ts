@@ -29,21 +29,6 @@ const API_ROOT = 'https://www.googleapis.com/youtube/v3';
 
 export const hasYouTubeApiKey = Boolean(API_KEY);
 
-export const demoVideos: Video[] = [
-  {
-    id: 'jNQXAC9IVRw', title: 'Me at the zoo', channel: 'jawed', channelId: 'UC4QobU6STFB0P71PMvOGN5A',
-    views: '310M views', published: '20 years ago', thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg', duration: '0:19',
-  },
-  {
-    id: 'aqz-KE-bpKQ', title: 'Big Buck Bunny — open movie sample', channel: 'Blender Foundation', channelId: 'UC3bc8j7uIKyj0fQ6r5gYy7A',
-    views: 'A sample video', published: 'YouTube demo', thumbnail: 'https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg', duration: '9:56',
-  },
-  {
-    id: 'M7lc1UVf-VE', title: 'YouTube embedded player demo', channel: 'YouTube Developers', channelId: '',
-    views: 'A sample video', published: 'YouTube demo', thumbnail: 'https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg', duration: '0:30',
-  },
-];
-
 function mapVideo(item: YouTubeItem): Video | null {
   const id = typeof item.id === 'string' ? item.id : item.id.videoId;
   if (!id) return null;

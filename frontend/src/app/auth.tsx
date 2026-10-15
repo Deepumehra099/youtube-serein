@@ -32,7 +32,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={[s.screen, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[s.screen, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => safeBack('/(tabs)')} style={[s.back, { backgroundColor: colors.elevated }]}><Text style={{ color: colors.text, fontSize: 13 }}>Back</Text></Pressable>
         <View style={s.logo}><BrandMark size={58} /></View>

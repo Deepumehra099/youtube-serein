@@ -32,7 +32,7 @@ export default function WatchScreen() {
 
   useEffect(() => {
     if (!isPlatform || !videoId) return;
-    void fetchComments(videoId, token).then(setComments).catch((cause) => setError(cause instanceof Error ? cause.message : 'Comments could not be loaded.'));
+    void fetchComments(videoId, token).then(setComments).catch(() => setError('Comments couldn’t load. Please try again later.'));
     if (token) void apiRequest<{ liked: boolean; saved: boolean }>(`/api/videos/${encodeURIComponent(videoId)}`, token).then((data) => { setLiked(data.liked); setSaved(data.saved); }).catch(() => {});
   }, [isPlatform, videoId, token]);
 
@@ -42,7 +42,7 @@ export default function WatchScreen() {
     try {
       await apiRequest(`/api/videos/${encodeURIComponent(videoId)}/${kind}`, token, { method: 'POST' });
       if (kind === 'like') setLiked(!liked); else setSaved(!saved);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Action failed.'); }
+    } catch { setError('That action couldn’t be completed. Please try again.'); }
     finally { setBusy(false); }
   };
 
@@ -52,7 +52,7 @@ export default function WatchScreen() {
     try {
       const data = await apiRequest<{ comment: Comment }>(`/api/videos/${encodeURIComponent(videoId)}/comments`, token, { method: 'POST', body: JSON.stringify({ body: commentText.trim() }) });
       setComments((current) => [data.comment, ...current]); setCommentText('');
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Comment could not be posted.'); }
+    } catch { setError('Your comment couldn’t be posted. Please try again.'); }
     finally { setBusy(false); }
   };
 

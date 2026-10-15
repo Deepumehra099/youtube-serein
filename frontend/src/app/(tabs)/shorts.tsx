@@ -21,7 +21,7 @@ export default function ShortsScreen() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try { setVideos(await listPlatformVideos(token)); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not load videos.'); }
+    catch { setError('Short videos couldn’t load. Check your connection and try again.'); }
     finally { setLoading(false); }
   }, [token]);
   useEffect(() => { void load(); }, [load]);
@@ -32,14 +32,14 @@ export default function ShortsScreen() {
       await apiRequest(`/api/videos/${encodeURIComponent(video.id)}/${kind}`, token, { method: 'POST' });
       if (kind === 'like') setLiked((state) => ({ ...state, [video.id]: !state[video.id] }));
       else setSaved((state) => ({ ...state, [video.id]: !state[video.id] }));
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Action failed.'); }
+    } catch { setError('That action couldn’t be completed. Please try again.'); }
   };
   const subscribe = async (video: PlatformVideo) => {
     if (!token) { router.push('/auth'); return; }
     try {
       const data = await apiRequest<{ subscribed: boolean }>(`/api/channels/${encodeURIComponent(video.channel.username)}/subscribe`, token, { method: 'POST' });
       setSubscribed((state) => ({ ...state, [video.channel.id]: data.subscribed }));
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not update subscription.'); }
+    } catch { setError('Your subscription couldn’t be updated. Please try again.'); }
   };
 
   return <View onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)} style={[s.screen, { backgroundColor: colors.background }]}>

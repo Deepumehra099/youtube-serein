@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../context/AppProvider';
 import { useTheme } from '../context/ThemeProvider';
 import { createPlatformVideo, NewVideo, uploadPlatformMedia } from '../services/api';
@@ -50,13 +50,14 @@ export default function UploadScreen() {
       }
       const uploaded = await uploadPlatformMedia(token, id, asset.uri, mimeType, setProgress);
       router.replace({ pathname: '/watch/[videoId]', params: { videoId: uploaded.id, title: uploaded.title, channel: uploaded.channel.displayName, source: 'platform' } });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Upload did not finish. Check your connection and retry.');
+    } catch {
+      setError('Upload didn’t finish. Check your connection and try again.');
     } finally { setBusy(false); }
   };
 
   return (
-    <ScrollView style={[s.screen, { backgroundColor: colors.background }]} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={[s.screen, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <ScrollView style={s.screen} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       <View style={s.header}><Pressable onPress={() => safeBack('/(tabs)')} style={[s.back, { backgroundColor: colors.elevated }]}><Text style={{ color: colors.text }}>Back</Text></Pressable><Text style={[s.heading, { color: colors.text }]}>Create</Text></View>
       {!token ? <View style={[s.signInCard, { backgroundColor: colors.surface, borderColor: colors.border }]}><Text style={[s.title, { color: colors.text }]}>Share something good.</Text><Text style={[s.helper, { color: colors.muted }]}>Sign in to publish your own videos to Serein.</Text><Pressable onPress={() => router.push('/auth')} style={[s.primary, { backgroundColor: colors.accent }]}><Text style={{ color: colors.accentText, fontWeight: '800' }}>Sign in to upload</Text></Pressable></View> : <>
         <Pressable accessibilityRole="button" onPress={() => void chooseVideo()} style={[s.fileBox, { borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -73,6 +74,7 @@ export default function UploadScreen() {
         <Pressable accessibilityRole="button" disabled={busy} onPress={() => void publish()} style={[s.primary, { backgroundColor: colors.accent, opacity: busy ? 0.7 : 1 }]}>{busy ? <ActivityIndicator color={colors.accentText} /> : <Text style={{ color: colors.accentText, fontWeight: '800' }}>{draftId ? 'Retry upload' : 'Publish video'}</Text>}</Pressable>
       </>}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
