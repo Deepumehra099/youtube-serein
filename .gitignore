@@ -1,0 +1,20 @@
+﻿# Dependencies and generated files
+**/node_modules/
+**/.expo/
+**/dist/
+**/build/
+.gradle/
+
+# Local configuration and credentials
+**/.env
+**/.env.*
+!**/.env.example
+
+# Backend runtime data
+backend/data/
+backend/media/
+
+# OS/editor files
+.DS_Store
+.idea/
+*.iml

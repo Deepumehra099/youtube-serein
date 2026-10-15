@@ -1,0 +1,13 @@
+{
+  "name": "serein-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24.15.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "admin:promote": "node --env-file-if-exists=.env src/admin.js promote",
+    "test": "node --test --test-isolation=none"
+  }
+}

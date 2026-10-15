@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Serein",
+    "slug": "serein",
+    "scheme": "serein",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.deepumehra.serein",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.deepumehra.serein",
+      "adaptiveIcon": {
+        "backgroundColor": "#17463D",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "src/app"
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {
+        "root": "src/app"
+      },
+      "eas": {
+        "projectId": "c088f9bc-32ba-4e59-a1c9-ad2e05a9bcd0"
+      }
+    },
+    "owner": "deepumehra099"
+  }
+}
